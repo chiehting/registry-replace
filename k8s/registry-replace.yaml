@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: admission
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: admission
+  name: registry-replace
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: registry-replace
+rules:
+- apiGroups: [""]
+  resources: ["services","configmaps","secrets"]
+  verbs: ["get", "list", "watch", "create", "delete"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "update", "patch"]
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["mutatingwebhookconfigurations"]
+  verbs: ["get", "create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: registry-replace
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: registry-replace
+subjects:
+- kind: ServiceAccount
+  namespace: admission
+  name: registry-replace
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: admission
+  name: registry-replace
+  labels:
+    app: registry-replace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry-replace
+  template:
+    metadata:
+      labels:
+        app: registry-replace
+    spec:
+      serviceAccountName: registry-replace
+      containers:
+      - name: webhook
+        image: docker.ketches.cn/cting/registry-replace:1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8443
+      restartPolicy: Always

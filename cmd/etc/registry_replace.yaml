@@ -1,0 +1,17 @@
+Name: "Registry-Replace"
+Host: "0.0.0.0"
+Port: 8443
+CertFile: "tls/server.crt"
+KeyFile: "tls/server.key"
+Log:
+  Mode: "console"
+  Encoding: "json"
+  Level: "info"
+  Compress: true
+IncludeNamespaces:
+  - "*"
+ExcludeNamespaces:
+  - "kube-node-lease"
+  - "kube-public"
+  - "kube-system"
+  - "admission"

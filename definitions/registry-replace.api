@@ -1,0 +1,51 @@
+syntax = "v1"
+
+info (
+	title:  "registryReplace"
+	desc:   "Replace Kubernetes registry url for images pull"
+	author: "chiehting"
+	email:  "ting911111@gmail.com"
+)
+
+type request {}
+
+type response {
+	Pong string `json:"pong"`
+}
+
+type (
+	AdmissionReview {
+		Kind       string             `json:"kind,omitempty"`
+		APIVersion string             `json:"apiVersion,omitempty"`
+		Request    *AdmissionRequest  `json:"request,omitempty"`
+		Response   *AdmissionResponse `json:"response,omitempty,optional"`
+	}
+	AdmissionRequest {
+		UID       string                 `json:"uid"`
+		Kind      *Object                `json:"kind"`
+		Resource  *Object                `json:"resource"`
+		Operation string                 `json:"operation"`
+		Object    map[string]interface{} `json:"object,optional"`
+	}
+	AdmissionResponse {
+		UID       string `json:"uid"`
+		Allowed   bool   `json:"allowed"`
+		Patch     []byte `json:"patch,omitempty"`
+		PatchType string `json:"patchType,omitempty"`
+	}
+	Object {
+		Group    string `json:"group"`
+		Version  string `json:"version"`
+		Kind     string `json:"kind,omitempty,optional"`
+		Resource string `json:"resource,omitempty,optional"`
+	}
+)
+
+service RegistryReplace {
+	@handler ping
+	get /ping (request) returns (response)
+
+	@handler mutate
+	post /mutate (AdmissionReview) returns (AdmissionReview)
+}
+

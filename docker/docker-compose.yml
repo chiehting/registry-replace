@@ -1,0 +1,11 @@
+services:
+  registry-replace-api:
+    build:
+      context: ..
+      dockerfile: docker/registry-replace/dockerfile
+    image: registry-replace:1.0.0
+    ports:
+      - "8888:8888"
+    volumes:
+      - ../cmd/etc/registry_replace.yaml:/app/etc/registry_replace.yaml
+

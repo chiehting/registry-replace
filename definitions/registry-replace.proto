@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package registryReplace;
+option go_package="./registryReplace";
+
+message Request {
+  string ping = 1;
+}
+
+message Response {
+  string pong = 1;
+}
+
+service Ping {
+  rpc Ping(Request) returns(Response);
+}
+
+message VoidRequest {}
+message VoidResponse {}
+
+service RegistryReplace {
+  rpc RegistryReplace(VoidRequest) returns(VoidResponse);
+}
