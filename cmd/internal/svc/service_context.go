@@ -61,19 +61,39 @@ func NewServiceContext(c config.Config) *ServiceContext {
 			&corev1.ConfigMap{},
 		},
 	}
-	// Destory k8s setting
+
+	// Initialize Kubernetes setting
 	DestroyKubernetesSetting(svcCtx)
-	// Init tls
 	createTlsSecret(svcCtx)
 	writeTLSFiles(svcCtx)
-	// Init MutatingWebhookConfiguration
 	createMutatingWebhookConfiguration(svcCtx)
-	// Init configmap
 	watchConfigMap(svcCtx)
 	createConfigMap(svcCtx)
-	// Init service
 	createService(svcCtx)
 	return svcCtx
+}
+
+func getClient() *kubernetes.Clientset {
+	config := ctrl.GetConfigOrDie()
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		logx.Errorf("%s", err.Error())
+	}
+	return clientset
+}
+
+func getNamespace() string {
+	namespace, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	if err != nil {
+		logx.Errorf("%v. Using \"default\"", err.Error())
+		return config.DefaultNamespace
+	}
+	ns := strings.TrimSpace(string(namespace))
+	if ns == "" {
+		logx.Errorf("Namespace is empty. Using \"default\"")
+		return config.DefaultNamespace
+	}
+	return ns
 }
 
 func DestroyKubernetesSetting(sc *ServiceContext) {
@@ -102,7 +122,8 @@ func createService(sc *ServiceContext) {
 	pod.Labels["app"] = k.Name
 	_, err = k.Client.CoreV1().Pods(k.Namespace).Update(context.TODO(), pod, metav1.UpdateOptions{})
 	if err != nil {
-		panic(err.Error())
+		logx.Errorf(err.Error())
+		return
 	}
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -248,29 +269,6 @@ func writeTLSFiles(sc *ServiceContext) {
 	if err != nil {
 		logx.Errorf("failed to write key file: %v", err)
 	}
-}
-
-func getClient() *kubernetes.Clientset {
-	config := ctrl.GetConfigOrDie()
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		logx.Errorf("%s", err.Error())
-	}
-	return clientset
-}
-
-func getNamespace() string {
-	namespace, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
-	if err != nil {
-		logx.Errorf("%v. Using \"default\"", err.Error())
-		return config.DefaultNamespace
-	}
-	ns := strings.TrimSpace(string(namespace))
-	if ns == "" {
-		logx.Errorf("Namespace is empty. Using \"default\"")
-		return config.DefaultNamespace
-	}
-	return ns
 }
 
 func createConfigMap(sc *ServiceContext) {

@@ -42,15 +42,13 @@ func (l *MutateLogic) Mutate(req *types.AdmissionReview) (*types.AdmissionReview
 	}
 
 	pod := &corev1.Pod{}
-
 	jsonData, err := json.Marshal(req.Request.Object)
 	if err != nil {
 		logx.Error(err.Error())
 		return doNothing, nil
 	}
 
-	err = json.Unmarshal(jsonData, pod)
-	if err != nil {
+	if err = json.Unmarshal(jsonData, pod); err != nil {
 		logx.Error(err.Error())
 		return doNothing, nil
 	}
@@ -59,7 +57,7 @@ func (l *MutateLogic) Mutate(req *types.AdmissionReview) (*types.AdmissionReview
 	if podName == "" {
 		podName = pod.GenerateName
 	}
-
+	logx.Infof("podName: %s", podName)
 	l.replaceImageUrl(pod)
 
 	patch := []map[string]interface{}{
@@ -96,7 +94,6 @@ func (l *MutateLogic) Mutate(req *types.AdmissionReview) (*types.AdmissionReview
 			PatchType: string(admissionv1.PatchTypeJSONPatch),
 		},
 	}
-
 	return admissionReview, nil
 }
 

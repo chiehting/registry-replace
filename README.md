@@ -23,26 +23,36 @@
 
   1. 克隆儲存庫：
 
-     ```bash
-     git clone https://github.com/chiehting/registry-replace.git
-     cd registry-replace
-     ```
+      ```bash
+      git clone https://github.com/chiehting/registry-replace.git
+      cd registry-replace
+      ```
 
   2. 部署 registry-replace：
 
-     ```bash
-     make apply
-     ```
+      ```bash
+      make apply
+      ```
 
 ### 配置
 
   1. 檢查並根據需要修改配置：
 
-     ```bash
-     kubectl describe configmap -n admission registry-replace
-     ```
+      ```bash
+      kubectl describe configmap -n admission registry-replace
+      ```
 
-  2. 編輯配置以指定首選的鏡像來源。
+  2. 編輯配置以指定首選的鏡像來源，預設如下。
+
+      ```yaml
+      data:
+        docker.io: docker.ketches.cn
+        gcr.io: gcr.ketches.cn
+        ghcr.io: ghcr.ketches.cn
+        k8s.gcr.io: k8s-gcr.ketches.cn
+        quay.io: quay.ketches.cn
+        registry.k8s.io: k8s.ketches.cn
+      ```
 
 ### 使用
 
@@ -74,4 +84,4 @@
 
 ## 聯繫我們
 
-  如有任何問題或建議，請 [開啟一個 issue](https://github.com/chiehting/registry-replace/issues) 或發送郵件至 <ting911111@gmail.com>。
+  如有任何問題或建議，請 [開啟一個 issue](https://github.com/chiehting/registry-replace/issues) 或發送郵件至 [ting911111@gmail.com](mailto:ting911111@gmail.com)。

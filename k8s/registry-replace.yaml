@@ -37,6 +37,44 @@ subjects:
   namespace: admission
   name: registry-replace
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-replace
+  namespace: admission
+data:
+  docker.io: docker.ketches.cn
+  gcr.io: gcr.ketches.cn
+  ghcr.io: ghcr.ketches.cn
+  k8s.gcr.io: k8s-gcr.ketches.cn
+  quay.io: quay.ketches.cn
+  registry.k8s.io: k8s.ketches.cn
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: admission
+data:
+  registry_replace.yaml: |
+    Name: "Registry-Replace"
+    Host: "0.0.0.0"
+    Port: 8443
+    CertFile: "tls/server.crt"
+    KeyFile: "tls/server.key"
+    Log:
+      Mode: "console"
+      Encoding: "json"
+      Level: "info"
+      Compress: true
+    IncludeNamespaces:
+      - "*"
+    ExcludeNamespaces:
+      - "kube-node-lease"
+      - "kube-public"
+      - "kube-system"
+      - "admission"
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -55,10 +93,20 @@ spec:
         app: registry-replace
     spec:
       serviceAccountName: registry-replace
+      restartPolicy: Always
       containers:
       - name: webhook
         image: docker.ketches.cn/cting/registry-replace:1.0.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8443
-      restartPolicy: Always
+        volumeMounts:
+        - name: app-config
+          mountPath: /etc/registry-replace
+      volumes:
+      - name: app-config
+        configMap:
+          name: app-config
+          items:
+          - key: registry_replace.yaml
+            path: registry_replace.yaml

@@ -19,10 +19,11 @@ generate-api: definitions/$(APP_REGISTRY_REPLACE).api
 # generate-rpc: definitions/$(APP_REGISTRY_REPLACE).proto
 # 	goctl rpc protoc $(GO_DEFINITION_DIR)/$(APP_REGISTRY_REPLACE).proto --go_out=$(GO_OUT_DIR) --go-grpc_out=$(GO_OUT_DIR) --zrpc_out=rpc --style go_zero -m
 
-.PHONY: buildImg
-buildImg:
-	docker-compose -f ${DOCKER_COMPOSE_YAML} build registry-replace-api
-	printf "y\n" | docker system prune
+.PHONY: buildimg
+buildimg:
+	docker buildx create --name mybuilder --use
+	docker buildx build --platform linux/amd64,linux/arm64 -f docker/registry-replace/Dockerfile -t cting/registry-replace:1.0.0 --push .
+	docker buildx rm mybuilder
 
 .PHONY: apply
 apply:
@@ -35,4 +36,3 @@ delete:
 .PHONY: run
 run:
 	cd cmd; go run registryreplace.go
-
