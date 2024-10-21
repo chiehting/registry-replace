@@ -103,6 +103,13 @@ spec:
         volumeMounts:
         - name: app-config
           mountPath: /etc/registry-replace
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
       volumes:
       - name: app-config
         configMap:
